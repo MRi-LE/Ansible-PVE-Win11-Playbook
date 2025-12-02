@@ -9,7 +9,7 @@ Its an addapted version from Clay Shekleton's Ansible Windows https://github.com
 Ansible playbook to create Windows templates for Proxmox (PVE) based lab environment (somewhat customized for mine, but easy enough to tweak), prepped for further Ansible automation. Tested with Proxmox v9.0.11 & Ansible 2.15.13.
 
 ### Goals:
-- Create a base Windows Server 2019 template image for [Proxmox VE](https://www.proxmox.com/en/proxmox-ve)
+- Create a base Windows 11 template image for [Proxmox VE](https://www.proxmox.com/en/proxmox-ve)
 - Start with only a base ISO from Microsoft (no other components like MDT necessary)
 - Apply necessary [VirtIO drivers](https://docs.fedoraproject.org/en-US/quick-docs/creating-windows-virtual-machines-using-virtio-drivers/index.html#virtio-win-direct-downloads) (to run on Proxmox/KVM) during Windows Setup
 - Pre-configure Windows image for Ansible to allow for further downstream configuration
@@ -26,6 +26,6 @@ Ansible playbook to create Windows templates for Proxmox (PVE) based lab environ
 
 ## Requirements
 
-- Windows Server ISO (eval is fine) available to Proxmox node(s). Update 'os_iso_location' in vars.yml to reflect the location of the PVE storage and ISO file name.
+- Windows 11 ISO available to Proxmox node(s). Update 'os_iso_location' in vars.yml to reflect the location of the PVE storage and ISO file name.
 - Additional VirtIO drivers added (/drivers/virtio folder) if necessary. Repo includes VirtIO SCSI, NIC (NetKVM), Balloon drivers and qemu guest agent.
 - Genisoimage installed on Proxmox host (present by default)
