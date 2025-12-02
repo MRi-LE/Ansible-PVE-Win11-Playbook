@@ -22,7 +22,7 @@ Ansible playbook to create Windows templates for Proxmox (PVE) based lab environ
 - Populate proxmox hosts in inventory.yml with the PVE hosts on which to create a template VM. If using shared storage, this only needs to be one host. 
 - For secure vars (passwords) in both inventory.yml & vars.yml, as alternative to clear text, use Ansible Vault or pass variables on command line to ansible-playbook.
 
-`ansible-playbook -i inventory.yml --ask-vault-pass provision-template.yml`
+`ansible-playbook -i inventory.yml --ask-vault-pass playbook.yml`
 
 ## Requirements
 
