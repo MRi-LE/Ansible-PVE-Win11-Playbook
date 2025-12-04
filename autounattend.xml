@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="utf-8"?>
+<unattend xmlns="urn:schemas-microsoft-com:unattend" xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State">
+	<settings pass="offlineServicing"></settings>
+	<!-- offlineServicing is the pass used when you are modifying or preparing a Windows image while it's offline - i.e. not on a running system, but on an image or WIM mount. --> 
+	<settings pass="windowsPE">
+		<component name="Microsoft-Windows-International-Core-WinPE" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS">
+			<UILanguage>en-US</UILanguage>
+		</component>
+		<!-- WinPE Settings: The Core-WinPE component specifies the default language, locale, and other international settings to use during Windows Setup or Windows Deployment Services installations.
+			 * loading provided virtio Driver
+			 * running Disk Configuration
+			 -->		
+		<component name="Microsoft-Windows-PnpCustomizationsWinPE" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS" processorArchitecture="amd64" xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+            <DriverPaths>
+                <PathAndCredentials wcm:action="add" wcm:keyValue="1">
+                    <Path>e:\drivers\virtio\amd64</Path>
+                </PathAndCredentials>
+            </DriverPaths>
+        </component>
+		<component name="Microsoft-Windows-Setup" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS">
+		 <DiskConfiguration>
+			<WillShowUI>Never</WillShowUI>
+			<Disk wcm:action="add">
+			  <DiskID>0</DiskID>
+			  <WillWipeDisk>true</WillWipeDisk>
+			  <CreatePartitions>
+				<CreatePartition wcm:action="add">
+				  <Order>1</Order>
+				  <Type>EFI</Type>
+				  <Size>100</Size>
+				</CreatePartition>
+				<CreatePartition wcm:action="add">
+				  <Order>2</Order>
+				  <Type>MSR</Type>
+				  <Size>128</Size>
+				</CreatePartition>
+				<CreatePartition wcm:action="add">
+				  <Order>3</Order>
+				  <Type>Primary</Type>
+				  <Extend>true</Extend>
+				</CreatePartition>
+			  </CreatePartitions>
+			  <ModifyPartitions>
+				<ModifyPartition wcm:action="add">
+				  <Order>1</Order>
+				  <PartitionID>1</PartitionID>
+				  <Label>System</Label>
+				  <Format>FAT32</Format>
+				</ModifyPartition>
+				<ModifyPartition wcm:action="add">
+				  <Order>2</Order>
+				  <PartitionID>3</PartitionID>
+				  <Label>Windows</Label>
+				  <Letter>C</Letter>
+				  <Format>NTFS</Format>
+				</ModifyPartition>
+			  </ModifyPartitions>
+			</Disk>
+		  </DiskConfiguration>
+			<!-- Image Install
+				* Image configuration from vars.yml
+				* preconfigured Product Key ( use your own )
+				--> 
+			<ImageInstall>
+				<OSImage>
+					<WillShowUI>Never</WillShowUI>
+					<InstallTo>
+						<DiskID>0</DiskID>
+						<PartitionID>3</PartitionID>
+					</InstallTo>
+				<InstallToAvailablePartition>false</InstallToAvailablePartition>
+					<InstallFrom>
+						<MetaData wcm:action="add">
+							<Key>/IMAGE/NAME</Key>
+							<Value>{{deploy_image}}</Value>
+						</MetaData>
+					</InstallFrom>
+				</OSImage>
+			</ImageInstall>
+			<UserData>
+				<ProductKey>
+					<Key>2B87N-8KFHP-DKV6R-Y2C8J-PKCKT</Key>
+					<WillShowUI>OnError</WillShowUI>
+				</ProductKey>
+				<AcceptEula>true</AcceptEula>
+			</UserData>
+			<UseConfigurationSet>false</UseConfigurationSet>
+		</component>
+	</settings>
+	<!-- Generalize --> 
+	<settings pass="generalize"></settings>
+	<!-- Speczialize Phase --> 
+	<settings pass="specialize">
+		<component name="Microsoft-Windows-Shell-Setup" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS">
+			<ComputerName>{{computer_name}}</ComputerName>
+			<TimeZone>{{vm_time_zone}}</TimeZone>
+		</component>		
+	</settings>		
+	<settings pass="auditSystem"></settings>
+	<settings pass="auditUser"></settings>	
+	<!-- out of the box experience aka oobe Phase -->
+	<settings pass="oobeSystem">
+		<component name="Microsoft-Windows-International-Core" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS">
+			<InputLocale>0407:00000407</InputLocale>
+			<SystemLocale>en-US</SystemLocale>
+			<UILanguage>en-US</UILanguage>
+			<UserLocale>en-US</UserLocale>
+		</component>
+		<component name="Microsoft-Windows-Shell-Setup" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS">
+		<AutoLogon>
+                <Username>administrator</Username>
+                <Password>
+                    <Value>{{vm_admin_pass}}</Value>
+                    <PlainText>true</PlainText>
+                </Password>
+                <Enabled>true</Enabled>
+                <LogonCount>3</LogonCount>
+            </AutoLogon> 
+			<OOBE>
+				<ProtectYourPC>3</ProtectYourPC>
+				<HideEULAPage>true</HideEULAPage>
+				<HideWirelessSetupInOOBE>true</HideWirelessSetupInOOBE>
+				<HideOnlineAccountScreens>true</HideOnlineAccountScreens>
+			</OOBE>
+			<UserAccounts>
+                <AdministratorPassword>
+                    <Value>{{vm_admin_pass}}</Value>
+                    <PlainText>true</PlainText>
+                </AdministratorPassword>
+            </UserAccounts>
+            <FirstLogonCommands>
+			    <SynchronousCommand wcm:action="add">																																 
+                    <Order>1</Order>
+                    <Description>Set Execution Policy 64 Bit</Description>
+                    <CommandLine>cmd.exe /c powershell -Command "Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Force"</CommandLine>
+                    <RequiresUserInput>true</RequiresUserInput>
+                </SynchronousCommand>
+                <SynchronousCommand wcm:action="add">															
+                    <Order>2</Order>
+                    <Description>Set Execution Policy 32 Bit</Description>
+                    <CommandLine>C:\Windows\SysWOW64\cmd.exe /c powershell -Command "Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Force"</CommandLine>
+                    <RequiresUserInput>true</RequiresUserInput>
+                </SynchronousCommand>
+                <SynchronousCommand wcm:action="add">
+                    <CommandLine>%SystemRoot%\System32\reg.exe ADD HKLM\SYSTEM\CurrentControlSet\Control\Network\NewNetworkWindowOff /f</CommandLine>
+                    <Order>3</Order>
+                    <Description>Disable Network Discovery Prompt</Description>								   
+                </SynchronousCommand>
+{% if agent is match("enabled=1") %}
+                <SynchronousCommand wcm:action="add">
+                    <CommandLine>e:\drivers\virtio\amd64\qemu-ga-x86_64.msi /quiet</CommandLine>
+                    <Order>4</Order>
+                    <Description>Install qemu-guest-agent</Description>
+                </SynchronousCommand>
+{% endif %}
+                <SynchronousCommand wcm:action="add">
+                    <CommandLine>powershell -File e:\scripts\AnsiblePrep.ps1</CommandLine>
+                    <Description>Configure Ansible Prep and WinRM</Description>
+                    <Order>5</Order>
+                </SynchronousCommand>
+                <SynchronousCommand wcm:action="add">
+                    <CommandLine>powershell -File e:\scripts\Specialize.ps1</CommandLine>
+                    <Description>Configure Ansible Prep and WinRM</Description>
+                    <Order>6</Order>	
+				</SynchronousCommand>
+                <SynchronousCommand wcm:action="add">
+                    <CommandLine>powershell -File e:\scripts\RemovePackages.ps1</CommandLine>
+                    <Description>Configure Ansible Prep and WinRM</Description>
+                    <Order>7</Order>
+                </SynchronousCommand>
+                <SynchronousCommand wcm:action="add">
+                    <CommandLine>powershell -File e:\scripts\Remove-Capabilities.ps1</CommandLine>
+                    <Description>Configure Ansible Prep and WinRM</Description>
+                    <Order>8</Order>
+                </SynchronousCommand> 				
+			</FirstLogonCommands>
+	   </component>
+	</settings>
+</unattend>

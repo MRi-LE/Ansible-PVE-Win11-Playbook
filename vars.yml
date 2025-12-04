@@ -1,0 +1,65 @@
+# vars.yml 
+---
+
+# PVE Template Provisioning Variables
+template_name:  Win11 #template Name
+pve_storage_id: local # Proxmox Storage location, Default: local
+vm_cores: 2
+vm_sockets: 2
+vm_memory_mb: 4096
+vm_os_type: win11
+# vm_os_type must be valid value per https://pve.proxmox.com/wiki/Qemu/KVM_Virtual_Machines
+drive_size_gb: 60
+start_at_boot: no
+os_iso_location: local:iso/Win11_25H2_English_x64.iso
+format: qcow2
+# qcow2 or raw if on lvm
+
+
+ # EFI disk (for booting via UEFI)
+efidisk0:
+  storage: "local-lvm"   # Proxmox storage for EFI disk
+  size: "4M"             # or "2M" for minimal, "4M" if you need secure boot keys
+  format: "raw"
+  efitype: "4m"
+  pre_enrolled_keys: false  # if you plan to use secure boot
+
+  # TPM for Windows 11 requirement (optional but recommended)
+tpmstate0:
+  storage: "local-lvm"
+  size: "4M"  # TPM state size, adjust as needed
+  version: "v2.0"
+  format: "qcow"
+
+# Boot settings
+boot: "order=ide0;ide1;virtio0;ide2"
+cpu_type: "x86-64-v2"
+#ootdisk: "virtio0"
+
+# Use UEFI BIOS
+bios: "ovmf"
+
+# Specify machine type
+machine: "pc-q35-10.1"     # Example Q35 machine; adjust to your Proxmox/QEMU version
+
+# Unattend.xml template variables:
+deploy_image: 'Windows Pro 11 N'
+# Applicable 2025 options for deploy_image: 
+#Windows 11 Home	For typical consumers / home users 
+#Windows 11 Pro	For more advanced users, small businesses — adds networking, security, business features. 
+#Windows 11 Pro for Workstations	For high-end workstations / power-users needing extra performance / hardware support. 
+#Windows 11 Education	For schools / educational institutions / students. 
+#Windows 11 Pro Education	Education-oriented but with Pro-level features (for institutions needing management/security + education licensing). 
+#Windows 11 Enterprise	For large organizations / companies needing advanced management, security, and deployment tools. 
+#Windows 11 SE	A lightweight version — aimed at low-cost / low-end devices, especially for education. 
+#Windows 11 IoT Enterprise	For embedded devices / specialized “Internet of Things” (IoT) scenarios / industrial use. 
+# The “N” editions (also “KN” for certain markets) are specially made versions that do not include media-related technologies. 
+# In practice this means: no built-in media playback apps (no Windows Media Player, no built-in video/music apps, no preinstalled media codecs) by default. 
+# Functionally: Aside from missing media features, an “N” edition behaves exactly like the non-N version
+
+computer_name: "*" # If you set <ComputerName>*</ComputerName> — the asterisk is a wildcard that instructs Windows: “Generate a random computer name automatically.
+vm_admin_pass: "P@ssw0rd"
+vm_time_zone: 'W. Europe Standard Time'  #Time Zone
+# Enable with: 'enabled=1,fstrim_cloned_disks=1,type=virtio'
+agent: 'enabled=1,fstrim_cloned_disks=1,type=virtio'
+

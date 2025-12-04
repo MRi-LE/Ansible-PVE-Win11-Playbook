@@ -1,0 +1,10 @@
+---
+proxmox:
+  hosts:
+    192.168.178.200  #Proxmox IP Address
+  vars:
+    ansible_user: root  # Proxmox User
+    ansible_password: 'Ruelps,303' # Proxmox user password
+    ansible_ssh_common_args: '-o StrictHostKeyChecking=no'
+    ansible_python_interpreter: auto_silent
+
